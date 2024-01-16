@@ -63,19 +63,29 @@ def initWindow(app_name):
 
 ######################################################
 # Event Object
+# INIT : ev(認識点X座標,認識点Y座標,比較色(R,G,B)) return object
+# METHOD : checkColor(self) return true or false
 ######################################################
 FindEnemy = ev(554,71,(254,0,0))
-FindEnemy_2 = ev(554,76,(254,0,0))
-FindEnemy_3 = ev(554,80,(254,0,0))
-HP = ev(780,590,(42,255,168))
+MyHP = ev(0,0,(255,255,255))
 
 ######################################################
 # Timer Object
+# INIT : tm() return object
+# METHOD : set(self) return void >> タイマーセット
+# METHOD : distance(self) return float >> タイマー差分
+# METHOD : reset(self) return void >> タイマーリセット
 ######################################################
 FindEnemy_tm = tm()
 
 ######################################################
 # TemplateMatching Object
+# INIT : im(画像ファイル名) return object
+# METHOD : match(self,xywh,fuzzy) return tuple(x,y,w,h) or None >> テンプレートマッチング
+# METHOD : match_binary(self,xywh,fuzzy) return tuple(x,y,w,h) or None >> 二値化テンプレートマッチング
+# METHOD : cv_display() return void >> マッチング結果の画面描画
+# CLASSVALUE : cv_display_flag = False >> マッチング結果の画面描画on/off
+# CLASSVALUE : result = None >> マッチング結果の座標
 ######################################################
 EnemyNameStr = im('lv.png')
 
@@ -102,7 +112,7 @@ while not sv.exit_loop:
     if Control.NOW == 1:
         FindEnemy_tm.set()
         #敵を発見
-        if FindEnemy.checkColor() == True or FindEnemy_2.checkColor() == True or FindEnemy_3.checkColor() == True:
+        if FindEnemy.checkColor() == True:
             Control.changeCtrl(2)
             logger.info("Attack")
             FindEnemy_tm.reset()
@@ -118,21 +128,19 @@ while not sv.exit_loop:
 
     #攻撃
     if Control.NOW == 2:
-        if FindEnemy.checkColor() == False and FindEnemy_2.checkColor() == False and FindEnemy_3.checkColor() == False:
+        if FindEnemy.checkColor() == False:
             Control.changeCtrl(0)
             logger.info("Enemy Died")
-            #倒し漏らし対策
-            Action.attack_archer()
         else:
             Action.attack_archer()
-            if HP.checkColor() == False:
+            if MyHP.checkColor() == False:
                 Action.use_portion()
 
     #エネミーサーチ(時間超過)
     if Control.NOW == 10:
         Action.Turn_camera_right()
         Action.enemy_lockon()
-        if FindEnemy.checkColor() == True or FindEnemy_2.checkColor() == True or FindEnemy_3.checkColor() == True:
+        if FindEnemy.checkColor() == True:
             Control.changeCtrl(2)
             logger.info("Attack")
 

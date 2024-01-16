@@ -71,6 +71,7 @@ class TemplateMatching:
         logger.debug(f"TemplateMatching.result = {TemplateMatching.result}")
         return TemplateMatching.result
     
+    """
     def moveCenter(self,xywh,fuzzy):
         while self.match(xywh,fuzzy) != None:
             time.sleep(0.1)
@@ -100,6 +101,7 @@ class TemplateMatching:
             if (abs(center_x_delta) < sv.window_size_x // 8) and (abs(center_y_delta) < sv.window_size_y // 8):
                 logger.debug("moveCenter break")
                 break
+    """
     
 i = threading.Thread(target=TemplateMatching.cv_display)
 i.start()
