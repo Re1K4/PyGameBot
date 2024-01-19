@@ -10,7 +10,7 @@ import win32gui
 
 logger = logging.getLogger(">")
 
-# 画像ファイルのpathに日本語指定を可能にする関数
+# Allow non-ASCII characters to be included in the path of image files
 def imread(filename, flags=cv2.IMREAD_COLOR, dtype=np.uint8):
     try:
         n = np.fromfile(filename, dtype)
@@ -21,12 +21,11 @@ def imread(filename, flags=cv2.IMREAD_COLOR, dtype=np.uint8):
         return None
 
 class TemplateMatching:
-    #クラス変数
+    #CLASS VARIABLE
     cv_display_flag = False
     result = None
 
-    #クラスメソッド
-    #マッチング結果の画面描画
+    #CLASS METHOD
     @classmethod
     def cv_display(self):
         while sv.exit_loop == False:
@@ -40,68 +39,33 @@ class TemplateMatching:
                 cv2.imshow('cv_display', screenshot)
                 cv2.waitKey(1)
 
-    #コンストラクタ
     def __init__(self,filename):
         self.image = imread(os.path.dirname(os.path.abspath(__file__)) + "\\" + filename)
 
-    #テンプレートマッチング
     def match(self,xywh,fuzzy):
         TemplateMatching.result = pg.locateOnScreen(self.image,grayscale=True,region=xywh,confidence=fuzzy)
         logger.debug(f"TemplateMatching.result = {TemplateMatching.result}")
         return TemplateMatching.result
     
-    #二値化テンプレートマッチング
     def match_binary(self,xywh,fuzzy):
-        #テンプレート画像をグレースケール⇒二値化
+        #Template image grayscale => binarize
         glay_temp = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         _, binary_temp = cv2.threshold(glay_temp, 127, 255, cv2.THRESH_BINARY)
-        #スクリーンショットを取得しグレースケール⇒二値化
+        #Get screenshot grayscale => binarize
         screenshot = pg.screenshot(region=xywh)
         glay_screen = cv2.cvtColor(np.array(screenshot), cv2.COLOR_BGR2GRAY)
         _, binary_screen = cv2.threshold(glay_screen, 127, 255, cv2.THRESH_BINARY)
-        #テンプレートマッチング
+        #Template matching
         matching_map = cv2.matchTemplate(binary_screen, binary_temp, cv2.TM_CCOEFF_NORMED)
         _, max_val, _, max_loc = cv2.minMaxLoc(matching_map)
-        #曖昧度以上の一致を確認
+        #Compare accuracy values with the highest similarity part in the matching map
         if max_val < fuzzy:
             TemplateMatching.result = None
         else:
-            #左上座標と幅、高さのタプルを返す
+            #Returns a tuple of the upper-left coordinates, width, and height of the matched rectangle
             TemplateMatching.result = (max_loc[0],max_loc[1],self.image.shape[1],self.image.shape[0])
         logger.debug(f"TemplateMatching.result = {TemplateMatching.result}")
         return TemplateMatching.result
-    
-    """
-    def moveCenter(self,xywh,fuzzy):
-        while self.match(xywh,fuzzy) != None:
-            time.sleep(0.1)
-            x, y, w, h = TemplateMatching.result
-            center_x_delta = sv.window_center_x - x
-            center_y_delta = sv.window_center_y - y
-            if (abs(center_x_delta) > sv.window_size_x // 8):
-                logger.debug(f"x:{center_x_delta} fix")
-                if center_x_delta > 0:
-                    pg.keyDown('left')
-                    time.sleep(0.01)
-                    pg.keyUp('left')
-                elif center_x_delta < 0:
-                    pg.keyDown('right')
-                    time.sleep(0.01)
-                    pg.keyUp('right')
-            if (abs(center_y_delta) > sv.window_size_y // 8):
-                logger.debug(f"y:{center_y_delta} fix")
-                if center_y_delta > 0:
-                    pg.keyDown('up')
-                    time.sleep(0.01)
-                    pg.keyUp('up')
-                elif center_y_delta < 0:
-                    pg.keyDown('down')
-                    time.sleep(0.01)
-                    pg.keyUp('down')
-            if (abs(center_x_delta) < sv.window_size_x // 8) and (abs(center_y_delta) < sv.window_size_y // 8):
-                logger.debug("moveCenter break")
-                break
-    """
     
 i = threading.Thread(target=TemplateMatching.cv_display)
 i.start()

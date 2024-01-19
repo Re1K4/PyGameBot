@@ -1,9 +1,4 @@
 ######################################################
-#Game Automation with Python PyAutoGui library
-#Developer:reika00
-######################################################
-
-######################################################
 # include
 ######################################################
 import pyautogui as pg
@@ -26,7 +21,7 @@ from TemplateMatching import TemplateMatching as im
 # Global Settings
 ######################################################
 
-#ログ出力設定
+# Logging settings
 logger = logging.getLogger(">")
 logging.basicConfig(level=logging.INFO,
                     format=" %(asctime)s - %(levelname)s:%(name)s - %(message)s",
@@ -37,7 +32,7 @@ logging.basicConfig(level=logging.INFO,
 # Functions
 ######################################################
 
-#強制終了関数(マルチスレッド)
+# Function to force exit (multithreaded)
 def check_esc_key():
     while True:
         time.sleep(0.01)
@@ -48,7 +43,7 @@ def check_esc_key():
 t = threading.Thread(target=check_esc_key)
 t.start()
 
-# ウィンドウ座標初期化関数(ウィンドウサイズは維持)
+# Function to initialize window coordinates (maintaining window size)
 def initWindow(app_name):
     logger.info("Init Window Position")
     app_window = win32gui.FindWindow(None, app_name)
@@ -62,93 +57,106 @@ def initWindow(app_name):
     win32gui.MoveWindow(app_window, 0, 0, sv.window_size_x, sv.window_size_y, True)
 
 ######################################################
-# Event Object
-# INIT : ev(認識点X座標,認識点Y座標,比較色(R,G,B)) return object
-# METHOD : checkColor(self) return true or false
+# Event Object 
+# Class for comparison with coordinates and color values
+# INIT : ev([int] x, [int] y, [tuple]([int] R,[int] G,[int] B)) return object
+    #x : x-coordinate
+    #y : y-coordinate
+    #RGB : Colorvalue
+# METHOD : checkColor(self) return bool
+    #Compares pixel colors at specified coordinates
 ######################################################
 FindEnemy = ev(554,71,(254,0,0))
 MyHP = ev(0,0,(255,255,255))
 
 ######################################################
 # Timer Object
+# Class for measure time
 # INIT : tm() return object
-# METHOD : set(self) return void >> タイマーセット
-# METHOD : distance(self) return float >> タイマー差分
-# METHOD : reset(self) return void >> タイマーリセット
+# METHOD : set(self) return None
+    #Record the time at the time of the call and activate the in-use flag
+# METHOD : distance(self) return float
+    #Calculate the time difference from the last time set() was called
+# METHOD : reset(self) return None
+    #Reset the timer so that it can be set again.
 ######################################################
 FindEnemy_tm = tm()
 
 ######################################################
 # TemplateMatching Object
-# INIT : im(画像ファイル名) return object
-# METHOD : match(self,xywh,fuzzy) return tuple(x,y,w,h) or None >> テンプレートマッチング
-# METHOD : match_binary(self,xywh,fuzzy) return tuple(x,y,w,h) or None >> 二値化テンプレートマッチング
-# METHOD : cv_display() return void >> マッチング結果の画面描画
-# CLASSVALUE : cv_display_flag = False >> マッチング結果の画面描画on/off
-# CLASSVALUE : result = None >> マッチング結果の座標
+# Class for template matching
+# INIT : im([any] image_filename) return object
+    #image_filename : File path of template image
+# METHOD : match(self,[tuple]([int] x,[int] y,[int] w,[int] h),[float]fuzzy) return BOX or None
+    #xywh : Top-left coordinate, width and height of the rectangular area for template matching
+    #fuzzy : Matching accuracy value (low-high/0-1)
+# METHOD : match_binary(self,[tuple]([int] x,[int] y,[int] w,[int] h),[float]fuzzy) return BOX or None
+    #Same as match(), but binarizes the template image before matching
+# CLASSMETHOD : cv_display() return None
+    #If cv_display_flag is True, draw matching results in real time
 ######################################################
-EnemyNameStr = im('lv.png')
+Enemy = im('test.png')
 
 ######################################################
 # Main
 ######################################################
 logger.info(os.path.basename(__file__) + " START")
 
-#アプリ名
-app_name = "BLUE PROTOCOL  "
+# App name
+app_name = "Game Window Name"
 initWindow(app_name)
 
-# 認識画面描画on/off
+# Display TemplateMatching result on/off
 im.cv_display_flag = False
 
-# メイン処理
+# Main process
 while not sv.exit_loop:
-    #初期状態
+    # Initial state
     if Control.NOW == 0:
         Control.changeCtrl(1)
         logger.info("Find Enemy")
 
-    #エネミーサーチ
+    # Enemy search
     if Control.NOW == 1:
         FindEnemy_tm.set()
-        #敵を発見
+        # Enemy found
         if FindEnemy.checkColor() == True:
             Control.changeCtrl(2)
             logger.info("Attack")
             FindEnemy_tm.reset()
-        #探索時間を超過
+        # Search time exceeded
         elif FindEnemy_tm.distance() > 7:
             Control.changeCtrl(10)
             logger.info("Not Find")
             FindEnemy_tm.reset()
-        #敵を探索
+        # Search for enemy
         else:
             Action.camera_reset()
             Action.enemy_lockon()
+        """
+        #Example code for finding the enemy using template matching
+        if Enemy.match((0,0,sv.window_size_x,sv.window_size_y),0.8) != None:
+            Control.changeCtrl(2)
+            logger.info("Attack")
+            FindEnemy_tm.reset()
+        """
 
-    #攻撃
+    # Attack
     if Control.NOW == 2:
         if FindEnemy.checkColor() == False:
             Control.changeCtrl(0)
             logger.info("Enemy Died")
         else:
-            Action.attack_archer()
+            Action.attack()
             if MyHP.checkColor() == False:
                 Action.use_portion()
 
-    #エネミーサーチ(時間超過)
+    # Enemy search (time exceeded)
     if Control.NOW == 10:
         Action.Turn_camera_right()
         Action.enemy_lockon()
         if FindEnemy.checkColor() == True:
             Control.changeCtrl(2)
             logger.info("Attack")
-
-        """
-        if EnemyNameStr.match((0,0,sv.window_size_x,sv.window_size_y),0.8) != None:
-            EnemyNameStr.moveCenter((0,0,sv.window_size_x,sv.window_size_y),0.8)
-            Control.changeCtrl(1)
-            logger.info("Find Enemy")
-        """
 
 cv2.destroyAllWindows()
