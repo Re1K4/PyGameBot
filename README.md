@@ -82,7 +82,7 @@ Obj = im([any] image_filename)
 
 Obj.match(self,[tuple]([int] x,[int] y,[int] w,[int] h),[float]fuzzy) -> return BOX or None
 
->x,y,w,h : Top-left coordinate, width and height of the rectangular area for template matching
+>x,y,w,h : Specify the area (upper left coordinate, width, and height) for template matching
 
 >fuzzy : Matching accuracy value (low-high/0-1)
 
