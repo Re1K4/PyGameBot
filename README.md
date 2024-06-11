@@ -28,7 +28,7 @@ This program will be terminated by pressing the ESC key. (check_esc_key function
 ## Features
 ### Event Class
 
-    Object with coordinates and color values on the screen
+Object with coordinates and color values on the screen
 
 #### Constructor:
 
@@ -44,12 +44,12 @@ This program will be terminated by pressing the ESC key. (check_esc_key function
   
 #### Method:
 
-Obj.checkColor(self) return bool
+Obj.checkColor(self) -> return bool
 >Compares the color values of the pixels corresponding to the object's xy-coordinates on the current screen and returns a match (true) or mismatch (false).
 
 ### Time Class
 
-    Objects that measure time
+Objects that measure time
 
 #### Constructor:
 
@@ -57,13 +57,13 @@ Obj.checkColor(self) return bool
  
 #### Method:
 
-Obj.set(self) return None
+Obj.set(self) -> return None
 >Get the current time and enable the timer use flag.
 
-Obj.distance(self) return float
+Obj.distance(self) -> return float
 >Calculate the time difference from the last time set() was called.
 
-Obj.reset(self) return None
+Obj.reset(self) -> return None
 >Disable the timer use flag. The next time set() is called, the time is overwritten and can be reused.    
 
 ## Author
