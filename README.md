@@ -17,9 +17,13 @@ pip install keyboard
 
 
 ## Usage
-step1 : Assign the title of the game window to [app_name].
+This is a template and will not work as is.
 
-step2 : Build Main process in Main.py according to the game.
+It is necessary to describe the main loop processing according to the operation you wish to automate.
+
+The variable app_name must be set to the title of the game window.
+
+This program will be terminated by pressing the ESC key. (check_esc_key function)
 
 ## Features
 Refer to the comments in the code for the classes and methods needed to build Main Process.
